@@ -38,7 +38,7 @@
 
 ;;	`org-agenda-property-list'
 ;;              This should be a list of all properties you want
-;;              displayed in the buffer. Default is "LOCATION".
+;;              displayed in the buffer. Default is "NOTE".
 
 ;; 	`org-agenda-property-position'
 ;; 		This is where you want the properties to be displayed
@@ -89,7 +89,7 @@ Please send me any bugs you find, and please inclue your emacs and your package 
   (interactive)
   (customize-group 'org-agenda-property t))
 
-(defcustom org-agenda-property-list '("LOCATION")
+(defcustom org-agenda-property-list '("NOTE")
   "List of properties to be displayed in the agenda buffer."
   :type '(list string)
    :group 'org-agenda-property)
@@ -99,12 +99,12 @@ Please send me any bugs you find, and please inclue your emacs and your package 
   :type 'string
    :group 'org-agenda-property)
 
-(defcustom org-agenda-property-column 60
+(defcustom org-agenda-property-column 0
   "Minimum column in which to insert in-line locations in agenda view."
   :type 'integer
    :group 'org-mode-property)
 
-(defcustom org-agenda-property-position 'where-it-fits
+(defcustom org-agenda-property-position 'same-line
   "Where the properties will be placed in the agenda buffer.
 
 'same-line means in the same line as the item it belongs to,
@@ -156,11 +156,15 @@ Uses `org-agenda-locations-column'."
             (setq loc (concat (make-string (max 0 (- org-agenda-property-column (current-column))) ?\ ) loc))
             (set-text-properties 0 (length loc) prop loc)
             (add-text-properties 0 (length loc) '(face font-lock-comment-face) loc)
-            (insert loc)))))))
+
+            (if (= (char-before) ?\ )
+                (insert (substring loc 1))
+              (insert loc))
+            ))))))
 
 (defun org-agenda-property-create-string (marker)
   "Creates a string of properties to be inserted in the agenda buffer."
-  (let ((out " [")
+  (let ((out " - ")
         (first t))
     (dolist (cur org-agenda-property-list)
       (let ((prop (org-entry-get marker cur 'selective)))
@@ -169,7 +173,7 @@ Uses `org-agenda-locations-column'."
                       (concat out org-agenda-property-separator prop)))
           (setq first nil))))
     (if first nil
-      (concat out "]"))))
+      (concat out ""))))
 
 ;;;###autoload
 (eval-after-load 'org-agenda
